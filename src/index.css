@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap');
+@import "tailwindcss";
+
+.live-pulse {
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.drop-cap p:first-of-type::first-letter {
+  float: left;
+  font-size: 5rem;
+  line-height: 0.8;
+  margin-right: 0.15rem;
+  margin-top: 0.05rem;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 900;
+}
+
+/* Ensure the reading experience is comfortable */
+.article-container {
+  max-width: 680px;         /* The 'Golden' width for readability */
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.625;      /* Perfectly balanced vertical space */
+  color: var(--article-color, inherit); /* Soft ink black adjusted for mode inheritance if needed, originally #1a1a1a */
+}
+
+/* Add space between paragraphs to prevent 'walls of text' */
+.article-container p {
+  margin-bottom: 1.75rem;
+  font-size: 1.25rem;      /* ~20px on desktop */
+}
+
+/* For mobile, slightly decrease the font but keep the spacing */
+@media (max-width: 640px) {
+  .article-container p {
+    font-size: 1.125rem;   /* ~18px */
+    padding: 0 1rem;       /* Add gutters so text doesn't hit screen edges */
+  }
+}
