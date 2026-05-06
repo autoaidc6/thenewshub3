@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   T, RSS_SOURCES, YOUTUBE_SOURCES, CATEGORY_FILTERS, TRUSTED_SOURCES,
   MEDIA_SECTIONS, RADIO_STATIONS, PODCAST_FEEDS, VIBE_SECTIONS,
-  CATEGORIES, BIAS, BIAS_STYLE, COUNTRY_KEYWORDS, WX
+  CATEGORIES, BIAS, BIAS_STYLE, COUNTRY_KEYWORDS, WX, WORLD_REGIONS
 } from "./constants";
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -106,6 +106,11 @@ function extractImage(html) {
   return m ? m[1] : null;
 }
 
+function isRTL(text) {
+  if (!text) return false;
+  return /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(text);
+}
+
 function timeAgo(date: any) {
   const d = (Date.now() - new Date(date).getTime()) / 1000;
   if (d < 60)    return "just now";
@@ -167,9 +172,12 @@ function NewsCard({ article, featured, onRead, th, bookmarks, onBookmark, active
   const isBookmarked = bookmarks.some((b: any) => b.id === article.id);
 
   const isLiveBreaking = featured && activeCategory === "top";
+  const rtl = isRTL(article.title + " " + article.description);
+  const langDir = rtl ? "rtl" : "ltr";
 
   return (
     <article
+      dir={langDir}
       onClick={() => onRead('in-app')}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -184,11 +192,12 @@ function NewsCard({ article, featured, onRead, th, bookmarks, onBookmark, active
         flexDirection: "column",
         height: "100%",
         gridColumn: featured ? "1 / -1" : "auto",
+        textAlign: rtl ? "right" : "left",
       }}
       className="group"
     >
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"1rem" }}>
-        <span style={{ fontSize:"0.625rem", fontFamily:"monospace", color:th.textSource, textTransform:"uppercase", letterSpacing:"0.05em", display:"flex", alignItems:"center", gap:"0.5rem" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"1rem", flexDirection: rtl ? "row-reverse" : "row" }}>
+        <span style={{ fontSize:"0.625rem", fontFamily:"monospace", color:th.textSource, textTransform:"uppercase", letterSpacing:"0.05em", display:"flex", alignItems:"center", gap:"0.5rem", flexDirection: rtl ? "row-reverse" : "row" }}>
           {isLiveBreaking && (
             <span className="live-pulse" style={{ background: th.live || "red", color: "#fff", padding: "0.15rem 0.4rem", borderRadius: 4, fontWeight: "bold", display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
                 <span style={{ width: 4, height: 4, background: "#fff", borderRadius: "50%" }}></span> LIVE
@@ -365,6 +374,12 @@ function RadioCard({ radio, onPlay, th }: any) {
 
 function ArticleReader({ article, th, isMobile }: any) {
   const [content, setContent] = useState<any>({ type: "loading" });
+  
+  const rtl = isRTL(article.title + " " + article.description);
+  const langDir = rtl ? "rtl" : "ltr";
+  const textForLang = article.title + " " + article.description;
+  const lang = /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(textForLang) ? "arabic" : 
+               /[\u1200-\u137F]/.test(textForLang) ? "eritrea" : "en";
 
   useEffect(() => {
     let active = true;
@@ -388,12 +403,12 @@ function ArticleReader({ article, th, isMobile }: any) {
   }, [article.url]);
 
   return (
-    <div style={{ padding: isMobile ? "1.5rem 1.25rem" : "4rem 2rem", maxWidth: 680, margin: "0 auto", fontSize: isMobile ? "18px" : "20px", lineHeight: 1.6, color: th.textBody, fontFamily: "'Source Serif 4', 'Charter', serif" }}>
+    <div dir={langDir} style={{ padding: isMobile ? "1.5rem 1.25rem" : "4rem 2rem", maxWidth: 680, margin: "0 auto", fontSize: isMobile ? "18px" : "20px", lineHeight: 1.6, color: th.textBody, fontFamily: rtl ? "'Amiri', serif" : "'Source Serif 4', 'Charter', serif", textAlign: rtl ? "right" : "left" }}>
        {article.image && <img src={article.image} alt="" style={{ width: "100%", borderRadius: 8, marginBottom: "2rem" }} />}
        
-       <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: isMobile ? "1.75rem" : "2.5rem", fontWeight: 900, color: th.textHead, marginBottom: "1.5rem", lineHeight: 1.2, letterSpacing: "-0.02em" }}>{article.title}</h1>
+       <h1 style={{ fontFamily: rtl ? "'Amiri', serif" : "'Playfair Display', Georgia, serif", fontSize: isMobile ? "1.75rem" : "2.5rem", fontWeight: 900, color: th.textHead, marginBottom: "1.5rem", lineHeight: 1.2, letterSpacing: rtl ? 0 : "-0.02em" }}>{article.title}</h1>
        
-       <div style={{ fontSize: "0.875rem", color: th.textSource, marginBottom: "3rem", fontFamily: "system-ui, sans-serif", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: `1px solid ${th.border}`, paddingBottom: "1.5rem" }}>
+       <div style={{ fontSize: "0.875rem", color: th.textSource, marginBottom: "3rem", fontFamily: "system-ui, sans-serif", textTransform: rtl ? "none" : "uppercase", letterSpacing: rtl ? 0 : "0.05em", borderBottom: `1px solid ${th.border}`, paddingBottom: "1.5rem", display: "flex",flexDirection: rtl ? "row-reverse" : "row", gap: "0.5rem" }}>
          {article.source} <span style={{color: th.textMuted}}>• {new Date(article.publishedAt).toLocaleString()}</span>
        </div>
        
@@ -431,7 +446,7 @@ function ArticleReader({ article, th, isMobile }: any) {
              {content.text.split(/\n\s*\n/).filter((p: string) => p.trim() !== "").map((pLine: string, i: number) => (
                <React.Fragment key={i}>
                  <p>{pLine.trim()}</p>
-                 {i === 1 && <AdUnit format="horizontal" />}
+                 {i === 1 && <AdUnit format="horizontal" lang={lang} />}
                </React.Fragment>
              ))}
              <div style={{ marginTop: "4rem", borderTop: `1px solid ${th.border}`, paddingTop: "2rem", textAlign: "center", fontFamily: "system-ui, sans-serif" }}>
@@ -625,7 +640,7 @@ function AudioPlayerBar({ item, th, isMobile, onClose }: any) {
   );
 }
 
-function AdUnit({ format = "auto", style = {} }: { format?: string, style?: any }) {
+function AdUnit({ format = "auto", style = {}, lang = "en" }: { format?: string, style?: any, lang?: string }) {
   useEffect(() => {
     try {
       if (typeof window !== "undefined") {
@@ -636,9 +651,13 @@ function AdUnit({ format = "auto", style = {} }: { format?: string, style?: any 
     }
   }, []);
 
+  let adLabel = "Advertisement";
+  if (lang === "arabic") adLabel = "إعلان";
+  else if (lang === "eritrea") adLabel = "መወዓውዒ";
+
   return (
     <div style={{ padding: "1.5rem", textAlign: "center", border: "1px dashed rgba(128,128,128,0.2)", borderRadius: 8, margin: "1rem 0", background: "rgba(128,128,128,0.05)", ...style }}>
-      <span style={{ display: "block", fontSize: "0.625rem", color: "gray", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>Advertisement</span>
+      <span style={{ display: "block", fontSize: "0.625rem", color: "gray", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>{adLabel}</span>
       <ins className="adsbygoogle"
         style={{ display: "block" }}
         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
@@ -758,29 +777,38 @@ export default function NewsApp() {
         schemas.push({
           "@context": "https://schema.org",
           "@type": "ItemList",
-          "itemListElement": articles.slice(0, 10).map((a: any, i) => ({
-            "@type": "ListItem",
-            "position": i + 1,
-            "item": {
-              "@type": "NewsArticle",
-              "headline": a.title,
-              "url": a.url,
-              "datePublished": a.publishedAt,
-              "author": {
-                "@type": "Organization",
-                "name": a.source || "Unknown"
+          "itemListElement": articles.slice(0, 10).map((a: any, i) => {
+            const txt = a.title + " " + a.description;
+            const lang = /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(txt) ? "ar" : /[\u1200-\u137F]/.test(txt) ? "ti" : "en";
+            return {
+              "@type": "ListItem",
+              "position": i + 1,
+              "item": {
+                "@type": "NewsArticle",
+                "inLanguage": lang,
+                "headline": a.title,
+                "url": a.url,
+                "datePublished": a.publishedAt,
+                "author": {
+                  "@type": "Organization",
+                  "name": a.source || "Unknown"
+                }
               }
-            }
-          }))
+            };
+          })
         });
       }
     } else if (readerItem.type === "article") {
+      const art = readerItem.item;
+      const txt = (art.title || "") + " " + (art.description || "");
+      const lang = /[\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(txt) ? "ar" : /[\u1200-\u137F]/.test(txt) ? "ti" : "en";
       schemas.push({
         "@context": "https://schema.org",
         "@type": "NewsArticle",
-        "headline": readerItem.item.title,
-        "image": [ readerItem.item.image || `${baseURL}/android-chrome-512x512.png` ],
-        "datePublished": readerItem.item.publishedAt,
+        "inLanguage": lang,
+        "headline": art.title,
+        "image": [ art.image || `${baseURL}/android-chrome-512x512.png` ],
+        "datePublished": art.publishedAt,
         "author": [{
           "@type": "Person",
           "name": "The News Hub Staff",
@@ -834,6 +862,7 @@ export default function NewsApp() {
   useEffect(() => {
     if (activeCategory === "live" && !MEDIA_SECTIONS.some(s=>s.id===subTab)) setSubTab("video");
     else if (activeCategory === "vibe" && !VIBE_SECTIONS.some(s=>s.id===subTab)) setSubTab("goodnews");
+    else if (activeCategory === "world" && !WORLD_REGIONS.some(s=>s.id===subTab)) setSubTab("world");
   }, [activeCategory, subTab]);
 
   const loadData = useCallback(async () => {
@@ -856,7 +885,7 @@ export default function NewsApp() {
           setPodcasts(res.flatMap(r => r.status === "fulfilled" && !r.value.error ? [r.value] : []));
         }
       } else {
-        const feedKey = activeCategory === "vibe" ? (subTab || "goodnews") : activeCategory;
+        const feedKey = activeCategory === "vibe" ? (subTab || "goodnews") : activeCategory === "world" ? (subTab || "world") : activeCategory;
         let urlsToFetch = RSS_SOURCES[feedKey] || [];
         const isUKTop = feedKey === "top" && userCountry === "GB";
         if (isUKTop) {
@@ -999,10 +1028,10 @@ export default function NewsApp() {
       </div>
 
       {/* SUB-CATEGORIES NAV */}
-      {(activeCategory === "live" || activeCategory === "vibe") && (
+      {(activeCategory === "live" || activeCategory === "vibe" || activeCategory === "world") && (
         <div style={{ width:"100%", display:"flex", justifyContent: isMobile ? "flex-start" : "center", padding: isMobile ? "1rem" : "1.25rem 2rem", borderBottom:`1px solid ${th.border}`, overflowX:"auto", scrollbarWidth:"none" }}>
           <div style={{ flexShrink: 0, display:"flex", gap:"1rem", paddingRight: isMobile ? "2rem" : "0" }}>
-            {(activeCategory === "live" ? MEDIA_SECTIONS : VIBE_SECTIONS).map(sub => (
+            {(activeCategory === "live" ? MEDIA_SECTIONS : activeCategory === "world" ? WORLD_REGIONS : VIBE_SECTIONS).map(sub => (
               <button 
                 key={sub.id} 
                 onClick={()=>setSubTab(sub.id)} 
@@ -1021,12 +1050,12 @@ export default function NewsApp() {
         </div>
       )}
 
-      {/* SUB-HEADER LABEL (Vibe or Media) */}
+      {/* SUB-HEADER LABEL (Vibe, Media, or World) */}
       {!loading && !error && activePage === "home" && (
         <div style={{ padding: isMobile ? "1rem 1rem 0" : "1.5rem 2rem 0", display:"flex", alignItems:"center", gap:"0.5rem", flexWrap: "wrap" }}>
           <h2 style={{ fontSize:"1.25rem", fontWeight:800, margin:0, display:"flex", alignItems:"center", color:th.textHead }}>
-             {(activeCategory === "vibe" || activeCategory === "live") && subTab 
-                ? (activeCategory==="live"?MEDIA_SECTIONS:VIBE_SECTIONS).find(s=>s.id===subTab)?.label 
+             {(activeCategory === "vibe" || activeCategory === "live" || activeCategory === "world") && subTab 
+                ? (activeCategory==="live"?MEDIA_SECTIONS:activeCategory==="world"?WORLD_REGIONS:VIBE_SECTIONS).find(s=>s.id===subTab)?.label 
                 : CATEGORIES.find(c => c.id === activeCategory)?.label}
           </h2>
           <span style={{ fontSize:"0.875rem", color: th.textMuted, fontFamily: "system-ui, sans-serif", display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -1078,7 +1107,7 @@ export default function NewsApp() {
                  {mixed.map((a: any,i: number) => (
                    <React.Fragment key={`${a.id || 'article'}-${i}`}>
                      <NewsCard activeCategory={activeCategory} article={a} onRead={(mode:string) => mode==="browser" ? window.open(a.url) : setReaderItem({type:"article", item:a})} th={th} bookmarks={bookmarks} onBookmark={toggleBookmark} />
-                     {(i + 1) % 4 === 0 && <AdUnit format="fluid" style={{ gridColumn: isMobile ? "span 1" : "auto" }} />}
+                     {(i + 1) % 4 === 0 && <AdUnit format="fluid" lang={subTab || "en"} style={{ gridColumn: isMobile ? "span 1" : "auto" }} />}
                    </React.Fragment>
                  ))}
                </>
@@ -1086,6 +1115,18 @@ export default function NewsApp() {
           </div>
         )}
       </main>
+
+      {/* ERITREA LISTEN LIVE STICKY */}
+      {activeCategory === "world" && subTab === "eritrea" && (
+        <div style={{ position: "fixed", bottom: isMobile ? 80 : 40, left: "50%", transform: "translateX(-50%)", zIndex: 50 }}>
+          <button 
+             onClick={() => setAudioItem(RADIO_STATIONS.find(r => r.id === "erena") || { id:"erena", name:"Radio Erena", country:"🇪🇷", genre:"Eritrea News", url:"https://radioerena.stream.zeno.fm/" })}
+             style={{ background: "#C00000", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "1rem 2rem", borderRadius: 999, fontWeight: "bold", fontSize: "1rem", boxShadow: "0 10px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3)", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem", letterSpacing: "0.05em" }}
+          >
+            <span className="live-pulse" style={{ fontSize: "1.2rem" }}>🔴</span> LISTEN: RADIO ERENA
+          </button>
+        </div>
+      )}
       </>
       ) : (
         <StaticPage page={activePage} th={th} />

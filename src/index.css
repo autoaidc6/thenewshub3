@@ -1,5 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 @import "tailwindcss";
+
+/* Professional Arabic Typography */
+[dir='rtl'] {
+  font-family: 'Amiri', serif;
+  line-height: 1.8; /* Arabic script needs slightly more leading */
+  letter-spacing: 0; /* Letter spacing breaks Arabic script */
+}
 
 .live-pulse {
   animation: pulse 1.5s infinite ease-in-out;

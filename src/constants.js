@@ -78,11 +78,15 @@ export const RSS_SOURCES = {
   goodnews: ["https://www.goodnewsnetwork.org/feed/","https://www.positive.news/feed/","https://www.sunnyskyz.com/feed/"],
   funny:    ["https://www.boredpanda.com/feed/","https://feeds.feedburner.com/TheOnion","https://www.oddee.com/feed/"],
   weird:    ["https://www.odditycentral.com/feed","https://www.atlasobscura.com/feeds/latest","https://www.mentalfloss.com/rss"],
+  arabic:   ["https://www.aljazeera.com/xml/rss/all.xml", "https://feeds.bbci.co.uk/arabic/rss.xml", "https://www.skynewsarabia.com/rss"],
+  eritrea:  ["https://podcastaddict.com/podcast/radio-erena-daily-broadcasts/5840713", "https://feeds.bbci.co.uk/tigrinya/rss.xml", "https://shabait.com/feed/"],
 };
 
 export const CATEGORY_FILTERS = {
+  world: { require: ["world","international","إريتريا","ኤርትራ","العالم","ዓለም"] },
+  eritrea: { require: ["eritrea","asmara","إريتريا","ኤርትራ"] },
   cars: { require: ["car","cars","auto","automotive","vehicle","vehicles","suv","sedan","coupe","ev","electric vehicle","tesla","bmw","ford","toyota","formula 1","f1"] },
-  tech: { require: ["tech","technology","ai","artificial intelligence","software","hardware","app","apps","startup","device","apple","google","microsoft","cybersecurity"] },
+  tech: { require: ["tech","technology","ai","artificial intelligence","software","hardware","app","apps","startup","device","apple","google","microsoft","cybersecurity","تكنولوجيا","ቴክኖሎጂ"] },
   motos: { require: ["motorcycle","motorcycles","moto","motorbike","bike","biker","riding","harley","kawasaki","yamaha","motogp"] },
   sports: { require: ["sport","sports","football","soccer","basketball","tennis","golf","rugby","cricket","baseball","hockey","athletics","olympic","f1"] },
   football: { require: ["football","soccer","premier league","champions league","la liga","serie a","ligue 1","world cup","goal","match","transfer"] },
@@ -143,6 +147,8 @@ export const RADIO_STATIONS = [
   { id:"rfi",      name:"RFI English",        country:"🇫🇷", genre:"World News",    url:"https://rfi-enlaces.akacast.akamaistream.net/7/422/470324/v1/gnmedia.akacast.akamaistream.net/rfi_anglais" },
   { id:"dw",       name:"DW Radio English",   country:"🇩🇪", genre:"World News",    url:"https://icecast.walmradio.com:8443/classic" },
   { id:"alj",      name:"Al Jazeera Radio",   country:"🇶🇦", genre:"World News",    url:"https://live-hls-web-aja.getaj.net/AJA/index.m3u8" },
+  { id:"erena",    name:"Radio Erena",        country:"🇪🇷", genre:"Eritrea News",  url:"https://radioerena.stream.zeno.fm/" },
+  { id:"dimtsi",   name:"Dimtsi Hafash",      country:"🇪🇷", genre:"Eritrea News",  url:"https://dimtsihafash.stream.zeno.fm/" },
 ];
 
 export const PODCAST_FEEDS = [
@@ -179,6 +185,8 @@ export const WORLD_REGIONS = [
   { id:"asia",     label:"🌏 Asia",         short:"Asia" },
   { id:"americas", label:"🌎 Americas",     short:"Amer" },
   { id:"mideast",  label:"🕌 Middle East",  short:"ME" },
+  { id:"arabic",   label:"عربي Arabic",     short:"عربي" },
+  { id:"eritrea",  label:"🇪🇷 Eritrea",      short:"Eri" },
 ];
 
 export const CATEGORIES = [
