@@ -699,7 +699,7 @@ function StaticPage({ page, th }: { page: string, th: any }) {
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function NewsApp() {
-  const [night, setNight] = useState(true);
+  const [night, setNight] = useState(false);
   const [activeCategory, setActiveCategory] = useState("top");
   const [activePage, setActivePage] = useState("home");
   const [subTab, setSubTab] = useState<string|null>(null);
@@ -910,7 +910,7 @@ export default function NewsApp() {
           <>
             <div style={{ display:"flex", width:"100%", justifyContent:"space-between", alignItems:"center" }}>
               <h1 onClick={() => setActivePage("home")} style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", fontFamily:"'Playfair Display', serif", fontWeight:900, fontSize: "1.75rem", color:th.textHead, margin:0, letterSpacing:"-0.03em", textTransform: "uppercase" }}>
-                <img src="/apple-touch-icon.png" alt="Logo" style={{ width: 32, height: 32, borderRadius: 6 }} />
+                <img src="/favicon.svg" alt="Logo" style={{ width: 32, height: 32, borderRadius: 6 }} />
                 THE NEWS HUB <span style={{ fontSize:"0.6rem", color:th.textMuted, letterSpacing:"0.15em", fontStyle:"normal", verticalAlign:"top", marginLeft:4 }}>LIVE</span>
               </h1>
               <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
@@ -937,7 +937,7 @@ export default function NewsApp() {
           <>
             <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
               <h1 onClick={() => setActivePage("home")} style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", fontFamily:"'Playfair Display', serif", fontWeight:900, fontSize:"1.5rem", color:th.textHead, margin:0, letterSpacing:"-0.03em", textTransform: "uppercase" }}>
-                <img src="/apple-touch-icon.png" alt="Logo" style={{ width: 32, height: 32, borderRadius: 6 }} />
+                <img src="/favicon.svg" alt="Logo" style={{ width: 32, height: 32, borderRadius: 6 }} />
                 THE NEWS HUB <span style={{ fontSize:"0.6rem", color:th.textMuted, letterSpacing:"0.15em", fontStyle:"normal", verticalAlign:"top", marginLeft:4 }}>LIVE</span>
               </h1>
               {weather && (
