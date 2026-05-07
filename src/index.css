@@ -19,16 +19,6 @@
   100% { opacity: 1; transform: scale(1); }
 }
 
-.drop-cap p:first-of-type::first-letter {
-  float: left;
-  font-size: 5rem;
-  line-height: 0.8;
-  margin-right: 0.15rem;
-  margin-top: 0.05rem;
-  font-family: 'Playfair Display', Georgia, serif;
-  font-weight: 900;
-}
-
 /* Ensure the reading experience is comfortable */
 .article-container {
   max-width: 680px;         /* The 'Golden' width for readability */
@@ -39,15 +29,65 @@
 }
 
 /* Add space between paragraphs to prevent 'walls of text' */
-.article-container p {
-  margin-bottom: 1.75rem;
-  font-size: 1.25rem;      /* ~20px on desktop */
+.article-container img,
+.article-container iframe,
+.article-container video,
+.article-container figure {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 8px;
+}
+.article-container * {
+  word-wrap: break-word;
+  max-width: 100%;
+}
+.article-container p,
+.article-container div {
+  margin-bottom: 1.5em;
+  font-size: inherit;
+  line-height: inherit;
+}
+.article-container h1,
+.article-container h2,
+.article-container h3,
+.article-container h4,
+.article-container h5,
+.article-container h6 {
+  margin-top: 2em;
+  margin-bottom: 1em;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-head, inherit);
+}
+.article-container h2 { font-size: 1.5em; }
+.article-container h3 { font-size: 1.25em; }
+.article-container ul,
+.article-container ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.article-container li {
+  margin-bottom: 0.5rem;
+}
+.article-container blockquote {
+  border-left: 4px solid var(--accent-bg, #eee);
+  padding-left: 1rem;
+  margin-left: 0;
+  font-style: italic;
+  color: var(--text-muted, #666);
+}
+
+/* Fix links to look interactive */
+.article-container a {
+  color: #3b82f6;
+  text-decoration: underline;
+  text-decoration-color: rgba(59, 130, 246, 0.4);
+  text-underline-offset: 4px;
 }
 
 /* For mobile, slightly decrease the font but keep the spacing */
 @media (max-width: 640px) {
   .article-container p {
     font-size: 1.125rem;   /* ~18px */
-    padding: 0 1rem;       /* Add gutters so text doesn't hit screen edges */
   }
 }

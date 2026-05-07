@@ -147,8 +147,8 @@ export const RADIO_STATIONS = [
   { id:"rfi",      name:"RFI English",        country:"🇫🇷", genre:"World News",    url:"https://rfi-enlaces.akacast.akamaistream.net/7/422/470324/v1/gnmedia.akacast.akamaistream.net/rfi_anglais" },
   { id:"dw",       name:"DW Radio English",   country:"🇩🇪", genre:"World News",    url:"https://icecast.walmradio.com:8443/classic" },
   { id:"alj",      name:"Al Jazeera Radio",   country:"🇶🇦", genre:"World News",    url:"https://live-hls-web-aja.getaj.net/AJA/index.m3u8" },
-  { id:"erena",    name:"Radio Erena",        country:"🇪🇷", genre:"Eritrea News",  url:"https://radioerena.stream.zeno.fm/" },
-  { id:"dimtsi",   name:"Dimtsi Hafash",      country:"🇪🇷", genre:"Eritrea News",  url:"https://dimtsihafash.stream.zeno.fm/" },
+  { id:"erena",    name:"Eri-TV Live",        country:"🇪🇷", genre:"Eritrea News",  url:"https://jmc-live.ercdn.net/eritreatv/eritreatv.m3u8" },
+  { id:"dimtsi",   name:"Eritrean Music & News", country:"🇪🇷", genre:"Eritrea News",  url:"https://linuxfreelancer.com:8443/test.mp3" },
 ];
 
 export const PODCAST_FEEDS = [

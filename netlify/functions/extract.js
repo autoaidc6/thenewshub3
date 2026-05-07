@@ -1,3 +1,6 @@
+import { Readability } from '@mozilla/readability';
+import { JSDOM } from 'jsdom';
+
 // netlify/functions/extract.js
 // ─────────────────────────────────────────────────────────────────────────────
 // Serverless article extractor — runs on Netlify's servers (not the browser),
@@ -49,6 +52,34 @@ export async function handler(event) {
 
     const html = await response.text();
 
+    let articleText = "";
+    let extractedTitle = "";
+    let extractedByline = "";
+    let extractedSiteName = "";
+    let articleHtml = "";
+
+    try {
+      const doc = new JSDOM(html, { url: articleUrl });
+      const reader = new Readability(doc.window.document);
+      const article = reader.parse();
+      
+      if (article && article.textContent) {
+        articleText = article.textContent
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
+          .join('\n\n');
+        extractedTitle = article.title || "";
+        extractedByline = article.byline || "";
+        extractedSiteName = article.siteName || "";
+        
+        // Add target="_blank" to all links
+        articleHtml = (article.content || "").replace(/<a /gi, '<a target="_blank" rel="noopener noreferrer" ');
+      }
+    } catch (e) {
+      console.warn("Readability parsing failed, falling back", e);
+    }
+
     // ── Extract metadata from <meta> tags ──────────────────────────────────
     const getMeta = (name) => {
       const patterns = [
@@ -66,10 +97,11 @@ export async function handler(event) {
 
     // ── Extract <title> ────────────────────────────────────────────────────
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    const rawTitle = getMeta("title") || (titleMatch ? decode(titleMatch[1]) : null) || "";
+    const rawTitle = extractedTitle || getMeta("title") || (titleMatch ? decode(titleMatch[1]) : null) || "";
 
     // ── Extract author ─────────────────────────────────────────────────────
     const author =
+      extractedByline ||
       getMeta("author") ||
       extractByPattern(html, [
         /<meta[^>]+name=["']author["'][^>]+content=["']([^"']+)["']/i,
@@ -93,18 +125,22 @@ export async function handler(event) {
 
     // ── Extract site name ──────────────────────────────────────────────────
     const siteName =
+      extractedSiteName ||
       getMeta("site_name") ||
-      new URL(articleUrl).hostname.replace(/^www\\./, "");
+      new URL(articleUrl).hostname.replace(/^www\./, "");
 
     // ── Extract main article text ──────────────────────────────────────────
-    const text = extractText(html);
+    if (!articleText) {
+      articleText = extractText(html);
+    }
 
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
         title:    rawTitle,
-        text:     text,
+        text:     articleText,
+        html:     articleHtml,
         author:   author,
         date:     date,
         image:    image,
@@ -133,7 +169,7 @@ function extractText(html) {
     .replace(/<aside[\s\S]*?<\/aside>/gi, "")
     .replace(/<figure[\s\S]*?<\/figure>/gi, "")
     .replace(/<noscript[\s\S]*?<\/noscript>/gi, "")
-    .replace(/<!--[\\s\\S]*?-->/g, "");
+    .replace(/<!--[\s\S]*?-->/g, "");
 
   // 2. Try to find the article body by common containers
   const articlePatterns = [
@@ -175,7 +211,7 @@ function extractText(html) {
   const paragraphs = text
     .split("\n\n")
     .map(p => p.trim())
-    .filter(p => p.length > 60); // skip short nav fragments
+    .filter(p => p.length > 20); // skip very short fragments
 
   return paragraphs.join("\n\n");
 }

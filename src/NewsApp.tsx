@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import Hls from "hls.js";
 import {
   T, RSS_SOURCES, YOUTUBE_SOURCES, CATEGORY_FILTERS, TRUSTED_SOURCES,
   MEDIA_SECTIONS, RADIO_STATIONS, PODCAST_FEEDS, VIBE_SECTIONS,
@@ -390,8 +391,8 @@ function ArticleReader({ article, th, isMobile }: any) {
         if (!active) return;
         if (data.error) {
           setContent({ type: "error", message: data.error });
-        } else if (data.text) {
-          setContent({ type: "success", text: data.text });
+        } else if (data.text || data.html) {
+          setContent({ type: "success", text: data.text, html: data.html });
         } else {
           setContent({ type: "error", message: "Failed to extract." });
         }
@@ -442,13 +443,20 @@ function ArticleReader({ article, th, isMobile }: any) {
        )}
        
        {content.type === "success" && (
-         <div className="article-container drop-cap" style={{ overflowWrap: "break-word" }}>
-             {content.text.split(/\n\s*\n/).filter((p: string) => p.trim() !== "").map((pLine: string, i: number) => (
-               <React.Fragment key={i}>
-                 <p>{pLine.trim()}</p>
-                 {i === 1 && <AdUnit format="horizontal" lang={lang} />}
-               </React.Fragment>
-             ))}
+         <div className="article-container" style={{ overflowWrap: "break-word" }}>
+             {content.html ? (
+                <>
+                  <div dangerouslySetInnerHTML={{ __html: content.html }} />
+                  <AdUnit format="horizontal" lang={lang} />
+                </>
+             ) : (
+               content.text.split(/\n\s*\n/).filter((p: string) => p.trim() !== "").map((pLine: string, i: number) => (
+                 <React.Fragment key={i}>
+                   <p>{pLine.trim()}</p>
+                   {i === 1 && <AdUnit format="horizontal" lang={lang} />}
+                 </React.Fragment>
+               ))
+             )}
              <div style={{ marginTop: "4rem", borderTop: `1px solid ${th.border}`, paddingTop: "2rem", textAlign: "center", fontFamily: "system-ui, sans-serif" }}>
                  <button onClick={() => window.open(article.url, "_blank")} style={{ padding: "0.75rem 1.5rem", background: "transparent", color: th.textMuted, border: `1px solid ${th.border}`, borderRadius: 8, cursor: "pointer", fontSize: "0.875rem", fontWeight: "bold", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                    View Original Source ↗
@@ -467,10 +475,39 @@ function AudioPlayerBar({ item, th, isMobile, onClose }: any) {
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.play().catch(e => console.log(e));
+    const audio = audioRef.current;
+    if (!audio) return;
+    const srcUrl = item.url || item.mp3;
+    
+    let hls: Hls | null = null;
+    
+    if (srcUrl && srcUrl.includes('.m3u8')) {
+      if (Hls.isSupported()) {
+        hls = new Hls();
+        hls.loadSource(srcUrl);
+        hls.attachMedia(audio);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          audio.play().catch(e => console.log(e));
+          setIsPlaying(true);
+        });
+      } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
+        audio.src = srcUrl;
+        audio.addEventListener('loadedmetadata', () => {
+          audio.play().catch(e => console.log(e));
+          setIsPlaying(true);
+        });
+      }
+    } else if (srcUrl) {
+      audio.src = srcUrl;
+      audio.play().catch(e => console.log(e));
       setIsPlaying(true);
     }
+    
+    return () => {
+      if (hls) {
+        hls.destroy();
+      }
+    };
   }, [item]);
 
   useEffect(() => {
@@ -531,7 +568,7 @@ function AudioPlayerBar({ item, th, isMobile, onClose }: any) {
       padding: isMobile ? "0.75rem 1rem" : "0 2rem", zIndex: 10000, boxShadow: "0 -4px 20px rgba(0,0,0,0.1)",
       color: th.textHead
     }}>
-      <audio ref={audioRef} src={item.url || item.mp3} />
+      <audio ref={audioRef} preload="none" />
       
       {isMobile ? (
         <>
@@ -736,6 +773,23 @@ export default function NewsApp() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    if (readerItem || choiceItem) {
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+    } else {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    }
+    return () => { 
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    };
+  }, [readerItem, choiceItem]);
 
   
   const [articles, setArticles] = useState([]);
@@ -1120,10 +1174,10 @@ export default function NewsApp() {
       {activeCategory === "world" && subTab === "eritrea" && (
         <div style={{ position: "fixed", bottom: isMobile ? 80 : 40, left: "50%", transform: "translateX(-50%)", zIndex: 50 }}>
           <button 
-             onClick={() => setAudioItem(RADIO_STATIONS.find(r => r.id === "erena") || { id:"erena", name:"Radio Erena", country:"🇪🇷", genre:"Eritrea News", url:"https://radioerena.stream.zeno.fm/" })}
+             onClick={() => setAudioItem(RADIO_STATIONS.find(r => r.id === "erena") || { id:"erena", name:"Eri-TV Live", country:"🇪🇷", genre:"Eritrea News", url:"https://jmc-live.ercdn.net/eritreatv/eritreatv.m3u8" })}
              style={{ background: "#C00000", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", padding: "1rem 2rem", borderRadius: 999, fontWeight: "bold", fontSize: "1rem", boxShadow: "0 10px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3)", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.5rem", letterSpacing: "0.05em" }}
           >
-            <span className="live-pulse" style={{ fontSize: "1.2rem" }}>🔴</span> LISTEN: RADIO ERENA
+            <span className="live-pulse" style={{ fontSize: "1.2rem" }}>🔴</span> LISTEN: ERI-TV LIVE
           </button>
         </div>
       )}
@@ -1174,14 +1228,20 @@ export default function NewsApp() {
 
       {readerItem && (
         <div 
-          style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: isMobile ? "0" : "2rem" }} 
+          style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: isMobile ? "0" : "2rem", overscrollBehavior: "none", touchAction: "none" }} 
           onClick={() => setReaderItem(null)}
         >
           <div 
-            style={{ background: th.bg, width: "100%", maxWidth: readerItem.type === 'video' ? 1000 : 800, height: isMobile ? "100vh" : "90vh", borderRadius: isMobile ? 0 : 12, overflow: "hidden", display: "flex", flexDirection: "column", position: "relative", border: `1px solid ${th.border}`, boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }} 
+            style={{ 
+               background: th.bg, 
+               width: "100%", 
+               maxWidth: readerItem.type === 'video' ? 1000 : 800, 
+               ...(isMobile ? { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderRadius: 0 } : { height: "100%", maxHeight: "90vh", borderRadius: 12, position: "relative" }),
+               overflow: "hidden", display: "flex", flexDirection: "column", border: `1px solid ${th.border}`, boxShadow: "0 20px 50px rgba(0,0,0,0.5)", touchAction: "auto"
+            }} 
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ padding: isMobile ? "1rem" : "1rem 1.5rem", borderBottom: `1px solid ${th.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: th.bgHeader }}>
+            <div style={{ padding: isMobile ? "1rem" : "1rem 1.5rem", borderBottom: `1px solid ${th.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: th.bgHeader, flexShrink: 0 }}>
               <h3 style={{ margin: 0, fontSize: isMobile ? "1rem" : "1.125rem", color: th.textHead, fontWeight: "bold", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", paddingRight: "0.5rem" }}>
                  {readerItem.item.title || readerItem.item.name}
               </h3>
@@ -1196,7 +1256,7 @@ export default function NewsApp() {
                 <button onClick={() => setReaderItem(null)} style={{ background: "transparent", border: "none", color: th.textMuted, cursor: "pointer", fontSize: "1.75rem", lineHeight: 1, padding: "0 0.25rem" }}>&times;</button>
               </div>
             </div>
-            <div style={{ flex: 1, overflow: "auto", position: "relative" }}>
+            <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", position: "relative", minHeight: 0 }}>
               {readerItem.type === 'video' && (
                 <iframe src={`https://www.youtube.com/embed/${readerItem.item.videoId || readerItem.item.id.replace(/^yt-/, '').replace(/^yt:video:/, '')}?autoplay=1`} style={{ width: "100%", height: "100%", border: "none" }} allow="autoplay; encrypted-media; fullscreen" allowFullScreen />
               )}
