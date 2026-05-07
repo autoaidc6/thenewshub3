@@ -776,18 +776,12 @@ export default function NewsApp() {
 
   useEffect(() => {
     if (readerItem || choiceItem) {
-      document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
-      document.body.style.touchAction = "none";
     } else {
-      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
-      document.body.style.touchAction = "";
     }
     return () => { 
-      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
-      document.body.style.touchAction = "";
     };
   }, [readerItem, choiceItem]);
 
@@ -1228,7 +1222,7 @@ export default function NewsApp() {
 
       {readerItem && (
         <div 
-          style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: isMobile ? "0" : "2rem", overscrollBehavior: "none", touchAction: "none" }} 
+          style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: isMobile ? "0" : "2rem" }} 
           onClick={() => setReaderItem(null)}
         >
           <div 
@@ -1236,8 +1230,8 @@ export default function NewsApp() {
                background: th.bg, 
                width: "100%", 
                maxWidth: readerItem.type === 'video' ? 1000 : 800, 
-               ...(isMobile ? { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderRadius: 0 } : { height: "100%", maxHeight: "90vh", borderRadius: 12, position: "relative" }),
-               overflow: "hidden", display: "flex", flexDirection: "column", border: `1px solid ${th.border}`, boxShadow: "0 20px 50px rgba(0,0,0,0.5)", touchAction: "auto"
+               ...(isMobile ? { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderRadius: 0 } : { height: "calc(100vh - 4rem)", maxHeight: 800, borderRadius: 12, position: "relative" }),
+               overflow: "hidden", display: "flex", flexDirection: "column", border: `1px solid ${th.border}`, boxShadow: "0 20px 50px rgba(0,0,0,0.5)"
             }} 
             onClick={e => e.stopPropagation()}
           >

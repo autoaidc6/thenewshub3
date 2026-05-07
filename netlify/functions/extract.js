@@ -1,6 +1,3 @@
-import { Readability } from '@mozilla/readability';
-import { JSDOM } from 'jsdom';
-
 // netlify/functions/extract.js
 // ─────────────────────────────────────────────────────────────────────────────
 // Serverless article extractor — runs on Netlify's servers (not the browser),
@@ -52,34 +49,6 @@ export async function handler(event) {
 
     const html = await response.text();
 
-    let articleText = "";
-    let extractedTitle = "";
-    let extractedByline = "";
-    let extractedSiteName = "";
-    let articleHtml = "";
-
-    try {
-      const doc = new JSDOM(html, { url: articleUrl });
-      const reader = new Readability(doc.window.document);
-      const article = reader.parse();
-      
-      if (article && article.textContent) {
-        articleText = article.textContent
-          .split('\n')
-          .map(line => line.trim())
-          .filter(line => line.length > 0)
-          .join('\n\n');
-        extractedTitle = article.title || "";
-        extractedByline = article.byline || "";
-        extractedSiteName = article.siteName || "";
-        
-        // Add target="_blank" to all links
-        articleHtml = (article.content || "").replace(/<a /gi, '<a target="_blank" rel="noopener noreferrer" ');
-      }
-    } catch (e) {
-      console.warn("Readability parsing failed, falling back", e);
-    }
-
     // ── Extract metadata from <meta> tags ──────────────────────────────────
     const getMeta = (name) => {
       const patterns = [
@@ -97,17 +66,16 @@ export async function handler(event) {
 
     // ── Extract <title> ────────────────────────────────────────────────────
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    const rawTitle = extractedTitle || getMeta("title") || (titleMatch ? decode(titleMatch[1]) : null) || "";
+    const rawTitle = getMeta("title") || (titleMatch ? decode(titleMatch[1]) : null) || "";
 
     // ── Extract author ─────────────────────────────────────────────────────
     const author =
-      extractedByline ||
       getMeta("author") ||
       extractByPattern(html, [
         /<meta[^>]+name=["']author["'][^>]+content=["']([^"']+)["']/i,
         /class=["'][^"']*author[^"']*["'][^>]*>([^<]{3,60})</i,
-        /"author":\\s*\\{[^}]*"name":\\s*"([^"]+)"/i,
-        /"author":\\s*"([^"]+)"/i,
+        /"author":\s*\{[^}]*"name":\s*"([^"]+)"/i,
+        /"author":\s*"([^"]+)"/i,
       ]);
 
     // ── Extract published date ─────────────────────────────────────────────
@@ -116,8 +84,8 @@ export async function handler(event) {
       getMeta("published_time") ||
       extractByPattern(html, [
         /<time[^>]+datetime=["']([^"']+)["']/i,
-        /"datePublished":\\s*"([^"]+)"/i,
-        /"publishedAt":\\s*"([^"]+)"/i,
+        /"datePublished":\s*"([^"]+)"/i,
+        /"publishedAt":\s*"([^"]+)"/i,
       ]);
 
     // ── Extract top image ──────────────────────────────────────────────────
@@ -125,13 +93,16 @@ export async function handler(event) {
 
     // ── Extract site name ──────────────────────────────────────────────────
     const siteName =
-      extractedSiteName ||
       getMeta("site_name") ||
       new URL(articleUrl).hostname.replace(/^www\./, "");
 
-    // ── Extract main article text ──────────────────────────────────────────
-    if (!articleText) {
-      articleText = extractText(html);
+    // ── Extract main article text and HTML ─────────────────────────────────
+    let articleText = extractText(html);
+    let articleHtml = extractHtmlContent(html);
+    
+    // Add target="_blank" to all links in HTML
+    if (articleHtml) {
+      articleHtml = articleHtml.replace(/<a /gi, '<a target="_blank" rel="noopener noreferrer" ');
     }
 
     return {
@@ -158,7 +129,7 @@ export async function handler(event) {
 }
 
 // ─── TEXT EXTRACTION ──────────────────────────────────────────────────────────
-function extractText(html) {
+function getArticleBody(html) {
   // 1. Remove everything we don't want
   let clean = html
     .replace(/<script[\s\S]*?<\/script>/gi, "")
@@ -189,6 +160,11 @@ function extractText(html) {
 
   // 3. Fall back to full cleaned HTML if no article found
   if (!body) body = clean;
+  return body;
+}
+
+function extractText(html) {
+  const body = getArticleBody(html);
 
   // 4. Convert <p>, <h2>, <h3>, <li> tags to text with newlines
   const text = body
@@ -214,6 +190,11 @@ function extractText(html) {
     .filter(p => p.length > 20); // skip very short fragments
 
   return paragraphs.join("\n\n");
+}
+
+function extractHtmlContent(html) {
+  const body = getArticleBody(html);
+  return body.trim();
 }
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
