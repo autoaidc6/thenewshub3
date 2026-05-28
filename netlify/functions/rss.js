@@ -30,7 +30,7 @@ export async function handler(event) {
         "User-Agent": "Mozilla/5.0 (compatible; Thenews/1.0; +https://thenewshub.org)",
         "Accept":     "application/rss+xml, application/atom+xml, application/xml, text/xml, */*",
       },
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(7500),
     });
 
     if (!res.ok) {

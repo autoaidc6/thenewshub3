@@ -405,6 +405,14 @@ function ArticleReader({ article, th, isMobile }: any) {
 
   return (
     <div dir={langDir} style={{ padding: isMobile ? "1.5rem 1.25rem" : "4rem 2rem", maxWidth: 680, margin: "0 auto", fontSize: isMobile ? "18px" : "20px", lineHeight: 1.6, color: th.textBody, fontFamily: rtl ? "'Amiri', serif" : "'Source Serif 4', 'Charter', serif", textAlign: rtl ? "right" : "left" }}>
+       
+       <div style={{ padding: "1rem", background: th.bgCard, border: `1px solid ${th.border}`, borderLeft: `6px solid ${th.accent}`, borderRadius: "0 8px 8px 0", marginBottom: "2rem", fontSize: "0.875rem", fontFamily: "system-ui, sans-serif", color: th.textBody, display:"flex", alignItems:"center", gap:"1rem" }}>
+         <div style={{ flex: 1 }}>
+           <strong style={{ color: th.textHead }}>Curated by TheNewsHub.</strong> This article is previewed from <strong>{article.source}</strong> for accessibility reading. We do not host or claim ownership of this content.
+         </div>
+         <a href={article.url} target="_blank" rel="noopener noreferrer" style={{ background: th.accentBg, color: th.accent, padding: "0.5rem 1rem", borderRadius: 4, textDecoration: "none", fontWeight: "bold", fontSize:"0.75rem", letterSpacing:"0.05em", whiteSpace:"nowrap" }}>READ ORIGINAL</a>
+       </div>
+
        {article.image && <img src={article.image} alt="" style={{ width: "100%", borderRadius: 8, marginBottom: "2rem" }} />}
        
        <h1 style={{ fontFamily: rtl ? "'Amiri', serif" : "'Playfair Display', Georgia, serif", fontSize: isMobile ? "1.75rem" : "2.5rem", fontWeight: 900, color: th.textHead, marginBottom: "1.5rem", lineHeight: 1.2, letterSpacing: rtl ? 0 : "-0.02em" }}>{article.title}</h1>
@@ -711,9 +719,9 @@ function StaticPage({ page, th }: { page: string, th: any }) {
       title: "About TheNewsHub",
       content: (
         <>
-          <p>TheNewsHub is a minimalist, readability-focused news aggregator aiming to provide the most important updates without distraction.</p>
-          <p>We believe in high-quality typography, minimal interfaces, and removing the clutter often found on news websites. Drawing inspiration from top editorial standards, our platform ensures reading is a peaceful, focused experience.</p>
-          <p>All news articles are aggregated from trusted sources using RSS feeds and curated live updates.</p>
+          <p>TheNewsHub is a curated news aggregation platform designed for accessibility, typography, and distraction-free reading.</p>
+          <p><strong>Our Philosophy:</strong> We believe in high-quality typography and minimal interfaces, removing the clutter often found on traditional news websites. We strive to provide an optimized reading environment, prioritizing cognitive ease and rapid information discovery.</p>
+          <p><strong>Content Curation & Attribution:</strong> TheNewsHub does not publish original news reporting. All content is entirely sourced from trusted third-party publishers via publicly available RSS feeds and API integrations. We act strictly as an aggregator and reading client. Full attribution, copyright, and direct links to the original articles are preserved for every piece of content. If you are a publisher and wish to have your feed removed, please contact us.</p>
         </>
       )
     },
@@ -722,8 +730,8 @@ function StaticPage({ page, th }: { page: string, th: any }) {
       content: (
         <>
           <p>Have questions, feedback, or suggestions? We'd love to hear from you.</p>
-          <p>You can reach out to our support and editorial team at:</p>
-          <p><strong>Email:</strong> {CONTACT_EMAIL}</p>
+          <p>If you are a content publisher with inquiries regarding attribution, technical issues, or feed removal requests, please reach out to our team directly.</p>
+          <p><strong>Email:</strong> <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: th.accent }}>{CONTACT_EMAIL}</a></p>
         </>
       )
     },
@@ -731,9 +739,21 @@ function StaticPage({ page, th }: { page: string, th: any }) {
       title: "Privacy Policy",
       content: (
         <>
-          <p>At TheNewsHub, we respect your privacy. This policy outlines our limited data collection practices.</p>
-          <p><strong>Data we collect:</strong> We temporarily determine your approximate geolocation to provide localized news (e.g. UK Top News). This happens on the client-side, and no personal identifiable location data is stored on our servers.</p>
-          <p><strong>Cookies & Tracking:</strong> We do not use third-party tracking cookies or invasive analytics. Your bookmarks and preferences are stored locally on your device.</p>
+          <p>At TheNewsHub, we respect your privacy. This policy outlines our data collection practices to ensure maximum transparency.</p>
+          <p><strong>Personal Data:</strong> We temporarily determine your approximate geolocation to provide localized news (e.g., regional updates). This resolution happens client-side or seamlessly at the edge, and no personally identifiable location data is stored on our servers.</p>
+          <p><strong>Cookies & Tracking:</strong> We use standard advertising integrations (such as Google AdSense) which may use cookies to serve ads based on prior visits to our website or other websites. Google's use of advertising cookies enables it and its partners to serve ads to users based on their visit to our sites and/or other sites on the Internet. Users may opt out of personalized advertising by visiting Ads Settings.</p>
+          <p><strong>Local Storage:</strong> Your bookmarks, theme preferences, and reading history are strictly stored locally on your device via standard browser <code>localStorage</code>. It is never transmitted to or processed by our backend databases.</p>
+        </>
+      )
+    },
+    terms: {
+      title: "Terms of Service",
+      content: (
+        <>
+          <p>Welcome to TheNewsHub. By using our application, you agree to these terms.</p>
+          <p><strong>1. Service Usage:</strong> TheNewsHub is provided "as is". We aim to provide high uptime, but we do not guarantee uninterrupted functionality. We reserve the right to limit access or terminate features at any time.</p>
+          <p><strong>2. Third-Party Content:</strong> Our platform indexes and provides an accessible reading view for third-party content. We do not claim ownership of the articles, images, or videos transmitted through our platform. All intellectual property remains with the respective publishers.</p>
+          <p><strong>3. Liability:</strong> We are an aggregator. We are not liable for inaccuracies, libel, or other issues related to the original content produced by third parties. You agree to use the service at your own risk.</p>
         </>
       )
     }
@@ -1186,6 +1206,7 @@ export default function NewsApp() {
           <button onClick={() => setActivePage("about")} style={{ background: "none", border: "none", color: activePage === "about" ? th.textHead : th.textMuted, cursor: "pointer" }}>About</button>
           <button onClick={() => setActivePage("contact")} style={{ background: "none", border: "none", color: activePage === "contact" ? th.textHead : th.textMuted, cursor: "pointer" }}>Contact</button>
           <button onClick={() => setActivePage("privacy")} style={{ background: "none", border: "none", color: activePage === "privacy" ? th.textHead : th.textMuted, cursor: "pointer" }}>Privacy Policy</button>
+          <button onClick={() => setActivePage("terms")} style={{ background: "none", border: "none", color: activePage === "terms" ? th.textHead : th.textMuted, cursor: "pointer" }}>Terms of Service</button>
         </div>
         <p style={{ fontFamily: "monospace" }}>&copy; {new Date().getFullYear()} TheNewsHub. Built for readability.</p>
       </footer>

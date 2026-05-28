@@ -30,8 +30,13 @@ export async function handler(event) {
   }
 
   try {
+    // AbortController to prevent 10s Netlify timeout 502s
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 7500); // 7.5 seconds
+
     // Fetch the article HTML from the origin server
     const response = await fetch(articleUrl, {
+      signal: controller.signal,
       headers: {
         // Mimic a real browser so sites don't block us
         "User-Agent":
@@ -42,6 +47,8 @@ export async function handler(event) {
         "Cache-Control": "no-cache",
       },
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
